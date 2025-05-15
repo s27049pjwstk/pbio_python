@@ -1,0 +1,52 @@
+Zapoznaj się z opisem formatu FASTA, który używany jest w bioinformatyce:
+https://pl.wikipedia.org/wiki/FASTA_format 
+
+Utwórz w Pythonie generator sekwencji nukleotydowych w formacie FASTA z następującymi wymaganiami minimalnymi (możesz wprowadzić więcej funkcjonalności jeśli chcesz):
+Program powinien generować losową sekwencję DNA składającą się z nukleotydów (A, C, G, T)
+Długość sekwencji powinna być określana przez użytkownika za pomocą funkcji input()
+Program powinien zapytać użytkownika o nazwę (ID) sekwencji i jej opis
+Wynik powinien być zapisany do pliku FASTA o nazwie odpowiadającej ID sekwencji z rozszerzeniem .fasta. W nagłówku w pliku FASTA powinno znaleźć się ID oraz opis podany przez użytkownika w ten sposób:
+>{ID} {opis podany przez użytkownika}
+{sekwencja DNA wygenerowana przez program}
+Program powinien również wyświetlić statystyki sekwencji: procentową zawartość każdego nukleotydu oraz stosunek zawartości nukleotydów C i G względem A i T.
+W losowym miejscu sekwencji program powinien wstawić twoje imię. Pamiętaj jednak żeby litery tworzące imię nie wpływały na statystyki sekwencji DNA oraz nie były liczone do jej długości.
+
+Wygląd interakcji z programem:
+Podaj długość sekwencji: 20
+Podaj ID sekwencji: A123
+Podaj opis sekwencji: Losowa sekwencja testowa
+Podaj imię: Mike
+
+Sekwencja została zapisana do pliku A123.fasta
+Statystyki sekwencji:
+A: 23.2%
+C: 26.4% 
+G: 24.8%
+T: 25.6%
+%CG: 51.2
+
+Przykładowo jak może wyglądać zawartość pliku (w tym przypadku plik będzie się nazywał A123.fasta):
+
+”””
+>A123 Losowa sekwencja testowa
+ACTGCCTGAAMikeACGACTGCCT
+”””
+
+Przygotuj finalną wersję pliku *.py, który będzie rozwiązaniem dla tego ćwiczenia, warunki brzegowe:
+Plik powinien dać się uruchomić w środowisku programistycznym (np. VS Code, Thonny i podobne)
+Umieść w formie komentarzy: cel programu i kontekst jego zastosowania
+Umieść w formie komentarzy: szczegółowe objaśnienie działania każdej linijki kodu
+Dodaj inne elementy, które uważasz za ważne
+
+
+////////////////////////////////
+
+
+Wprowadź do programu minimum 3 ulepszenia w taki sposób, że kod oryginalny, który zmieniasz nadal pozostaje w programie, ale umieszczasz go w komentarzach. To ty decydujesz jakie ulepszenia wprowadzasz i dlaczego. W komentarzach w pliku *.py umieść informację co zmieniasz na co i dlaczego zmieniasz kod wygenerowany przez LLM.
+Możesz to zrobić w ten sposób:
+# ORIGINAL:
+# <stara wersja>
+# MODIFIED (w nawiasie uzasadnienie dla zmiany):
+<nowa wersja>
+
+Umieść w formie komentarzy zmiany, które wprowadzasz względem kodu wygenerowanego przez LLM według opisu powyżej
