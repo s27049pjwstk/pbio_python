@@ -15,9 +15,15 @@ Kontekst zastosowania:
 - Demonstracja obsługi plików FASTA w języku Python
 - Analiza statystyczna losowych sekwencji DNA
 - Nauka podstaw programowania w kontekście bioinformatyki
+
+Wprowadzone ulepszenia:
+- Podział na linie po 60 znaków zgodnie z FASTA
+- Możliwość ustalenia wag dla nukleotydów
+- Zapisywanie nowych sekwencji do istniejącego pliku
 """
 
 import random
+import os
 
 
 def main():
@@ -31,8 +37,12 @@ def main():
     seq_description = get_sequence_description()  # Pobierz opis sekwencji
     user_name = get_user_name()  # Pobierz imię użytkownika
 
-    # Generowanie losowej sekwencji DNA
-    dna_sequence = generate_dna_sequence(seq_length)
+    # ORIGINAL:
+    # # Generowanie losowej sekwencji DNA
+    # dna_sequence = generate_dna_sequence(seq_length)
+    # MODIFIED (Możliwość ustalenia wag dla nukleotydów):
+    weights = get_nucleotide_weights()  # zapytaj i weź od użytkownika wagi
+    dna_sequence = generate_dna_sequence(seq_length, weights)
 
     # Wstawienie imienia w losowe miejsce w sekwencji
     final_sequence = insert_name_into_sequence(dna_sequence, user_name)
@@ -40,9 +50,20 @@ def main():
     # Obliczanie statystyk sekwencji (tylko dla właściwej sekwencji DNA, bez imienia)
     stats = calculate_sequence_stats(dna_sequence)
 
-    # Zapisanie sekwencji do pliku FASTA
+    # ORIGINAL:
+    # # Zapisanie sekwencji do pliku FASTA
+    # filename = f"{seq_id}.fasta"
+    # save_to_fasta(filename, seq_id, seq_description, final_sequence)
+    # MODIFIED (Zapisywanie nowych sekwencji do istniejącego pliku):
     filename = f"{seq_id}.fasta"
-    save_to_fasta(filename, seq_id, seq_description, final_sequence)
+    mode = 'w'  # default nadpisywanie
+
+    if os.path.exists(filename):
+        append_choice = input(f"Plik {filename} już istnieje. Czy chcesz dopisać sekwencję do istniejącego pliku? (t/n): ")
+        if append_choice.lower() == 't':
+            mode = 'a'  # tryb dopisywanie
+
+    save_to_fasta(filename, seq_id, seq_description, final_sequence, mode)
 
     # Wyświetlenie statystyk sekwencji
     display_stats(stats, filename)
@@ -105,12 +126,59 @@ def get_user_name():
         print("Imię nie może być puste.")
 
 
-def generate_dna_sequence(length):
+# ORIGINAL:
+# def generate_dna_sequence(length):
+#     """
+#     Generuje losową sekwencję DNA o podanej długości.
+#
+#     Args:
+#         length (int): Długość sekwencji do wygenerowania
+#
+#     Returns:
+#         str: Wygenerowana sekwencja DNA
+#     """
+#     # Lista nukleotydów w DNA
+#     nucleotides = ['A', 'C', 'G', 'T']
+#
+#     # Generowanie losowej sekwencji przez wybieranie nukleotydów
+#     sequence = ''.join(random.choice(nucleotides) for _ in range(length))
+#
+#     return sequence
+# MODIFIED (Możliwość ustalenia wag dla nukleotydów):
+def get_nucleotide_weights():
     """
-    Generuje losową sekwencję DNA o podanej długości.
+    Pyta użytkownika czy chce ustalić wagi dla nukleotydów
+    Jeśli tak, to pobiera te wagi od niego
+    Zwraca albos wagi albo none
+    """
+    custom_weights = input("Czy chcesz ustalić wagi dla nukleotydów? (t/n): ").lower()
+
+    if custom_weights == 't':
+        weights = {}
+        print("Podaj wagi dla poszczególnych nukleotydów (liczby większe od 0):")
+        for nucleotide in ['A', 'C', 'G', 'T']:
+            while True:
+                try:
+                    weight = float(input(f"Waga dla {nucleotide}: "))
+                    if weight <= 0:
+                        print("Waga musi być większa od 0.")
+                        continue
+                    weights[nucleotide] = weight
+                    break
+                except ValueError:
+                    print("Wprowadź prawidłową liczbę.")
+        return weights
+    else:
+        return None  # równe proporcje
+
+
+def generate_dna_sequence(length, weights=None):
+    """
+    Generuje losową sekwencję DNA o podanej długości z możliwością kontrolowania wag nukleotydów.
 
     Args:
         length (int): Długość sekwencji do wygenerowania
+        weights (dict, optional): wagi dla poszczególnych nukleotydów, jak none to równe
 
     Returns:
         str: Wygenerowana sekwencja DNA
@@ -118,11 +186,15 @@ def generate_dna_sequence(length):
     # Lista nukleotydów w DNA
     nucleotides = ['A', 'C', 'G', 'T']
 
-    # Generowanie losowej sekwencji przez wybieranie nukleotydów
-    sequence = ''.join(random.choice(nucleotides) for _ in range(length))
+    if weights:
+        # Generowanie losowej sekwencji z uwzględnieniem wag
+        weights_list = [weights[n] for n in nucleotides]
+        sequence = ''.join(random.choices(nucleotides, weights=weights_list, k=length))
+    else:
+        # Generowanie losowej sekwencji z równymi proporcjami
+        sequence = ''.join(random.choice(nucleotides) for _ in range(length))
 
     return sequence
-
 
 def insert_name_into_sequence(sequence, name):
     """
@@ -178,7 +250,28 @@ def calculate_sequence_stats(sequence):
     }
 
 
-def save_to_fasta(filename, seq_id, description, sequence):
+# ORIGINAL:
+# def save_to_fasta(filename, seq_id, description, sequence):
+#     """
+#     Zapisuje sekwencję DNA do pliku w formacie FASTA.
+#
+#     Args:
+#         filename (str): Nazwa pliku do zapisu
+#         seq_id (str): ID sekwencji
+#         description (str): Opis sekwencji
+#         sequence (str): Sekwencja DNA do zapisu
+#     """
+#     with open(filename, 'w') as f:
+#         # Zapisz nagłówek FASTA
+#         header = f">{seq_id}"
+#         if description:
+#             header += f" {description}"
+#         f.write(header + "\n")
+#
+#         # Zapisz sekwencję, można również dodać łamanie linii co 80 znaków
+#         f.write(sequence + "\n")
+# MODIFIED (Podział na linie po 60 znaków zgodnie z FASTA oraz Zapisywanie nowych sekwencji do istniejącego pliku):
+def save_to_fasta(filename, seq_id, description, sequence, mode='w'):
     """
     Zapisuje sekwencję DNA do pliku w formacie FASTA.
 
@@ -187,16 +280,20 @@ def save_to_fasta(filename, seq_id, description, sequence):
         seq_id (str): ID sekwencji
         description (str): Opis sekwencji
         sequence (str): Sekwencja DNA do zapisu
+        mode (str): Tryb zapisywania ('w' - nadpisywanie, 'a' - dopisywanie)
     """
-    with open(filename, 'w') as f:
+    with open(filename, mode) as f:
         # Zapisz nagłówek FASTA
         header = f">{seq_id}"
         if description:
             header += f" {description}"
         f.write(header + "\n")
 
-        # Zapisz sekwencję, można również dodać łamanie linii co 80 znaków
-        f.write(sequence + "\n")
+        # Podział sekwencji na linie po 60 znaków
+        line_length = 60
+        for i in range(0, len(sequence), line_length):
+            line = sequence[i:i + line_length]
+            f.write(line + "\n")
 
 
 def display_stats(stats, filename):
